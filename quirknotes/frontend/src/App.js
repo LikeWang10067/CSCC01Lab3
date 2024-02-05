@@ -58,9 +58,22 @@ function App() {
   }
   
 
-  const deleteAllNotes = () => {
-    // Code for DELETE all notes here
-  }
+  const deleteAllNotes = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/deleteAllNotes', {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete all notes');
+      }
+      const result = await response.json();
+      alert(result.response); // Notify the user
+      deleteAllNotesState(); // Update the UI by clearing the notes array
+    } catch (error) {
+      console.error("Error during fetch operation:", error.message);
+      alert("Error deleting all notes");
+    }
+  };
 
   
   // -- Dialog functions --
@@ -93,8 +106,8 @@ function App() {
   }
 
   const deleteAllNotesState = () => {
-    // Code for modifying state after DELETE all here
-  }
+    setNotes([]); // Clears the notes from the state, effectively updating the UI
+  };
 
   const patchNoteState = (_id, title, content) => {
     setNotes((prevNotes) => prevNotes.map(note => {
