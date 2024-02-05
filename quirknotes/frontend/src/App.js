@@ -38,9 +38,25 @@ function App() {
     getNotes()
   }, [])
 
-  const deleteNote = (entry) => {
-    // Code for DELETE here
+  const deleteNote = async (entry) => {
+    try {
+      // Assuming `entry` contains the note's ID
+      const response = await fetch(`http://localhost:4000/deleteNote/${entry._id}`, {
+        method: 'DELETE', // Specify the DELETE method
+      });
+  
+      if (!response.ok) {
+        // If the response status is not successful, log the error status
+        console.log("Error deleting note:", response.status);
+      } else {
+        // Handle successful deletion here, such as updating the state to remove the note
+        deleteNoteState(entry._id);
+      }
+    } catch (error) {
+      console.error("Error during fetch operation:", error.message);
+    }
   }
+  
 
   const deleteAllNotes = () => {
     // Code for DELETE all notes here
@@ -72,8 +88,8 @@ function App() {
     setNotes((prevNotes) => [...prevNotes, {_id, title, content}])
   }
 
-  const deleteNoteState = () => {
-    // Code for modifying state after DELETE here
+  const deleteNoteState = (noteId) => {
+    setNotes((prevNotes) => prevNotes.filter(note => note._id !== noteId));
   }
 
   const deleteAllNotesState = () => {
@@ -81,7 +97,12 @@ function App() {
   }
 
   const patchNoteState = (_id, title, content) => {
-    // Code for modifying state after PATCH here
+    setNotes((prevNotes) => prevNotes.map(note => {
+      if (note._id === _id) {
+        return { ...note, title, content};
+      }
+      return note;
+    }));
   }
 
   return (
@@ -130,7 +151,7 @@ function App() {
           initialNote={dialogNote}
           closeDialog={closeDialog}
           postNote={postNoteState}
-          // patchNote={patchNoteState}
+          patchNote={patchNoteState}
           />
 
       </header>

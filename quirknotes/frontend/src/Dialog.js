@@ -3,7 +3,8 @@ import './App.css';
 
 const baseNote = {title: "", content: ""}
 
-function Dialog({open, initialNote, closeDialog, postNote: postNoteState}) {
+function Dialog({open, initialNote, closeDialog, postNote: postNoteState, 
+                 patchNote: patchNoteState}) {
 
     // -- Dialog props --
     const [note, setNote] = useState(baseNote)
@@ -54,8 +55,31 @@ function Dialog({open, initialNote, closeDialog, postNote: postNoteState}) {
         } 
     }
 
-    const patchNote = (entry) => {
-        // Code for PATCH here
+    const patchNote = async (entry) => {
+        try {
+            const response = await fetch(`http://localhost:4000/patchNote/${entry._id}`, {
+                method: 'PATCH', // Specify the method to use for the request
+                headers: {
+                    'Content-Type': 'application/json', // Specify the content type in the header
+                },
+                body: JSON.stringify({
+                    title: entry.title, // Assuming the note has a title
+                    content: entry.content, // Assuming the note has content
+                }), // Convert the JavaScript object to a JSON string
+            });
+    
+            if (!response.ok) {
+                // If the response is not ok, log the error status
+                console.error("Error updating note:", response.status);
+            } else {
+                // If the update is successful, update the local state
+                const updatedNote = await response.json(); // Assuming the response includes the updated note data
+                patchNoteState(entry._id, entry.title, entry.content);
+                console.log("Note updated successfully", updatedNote);
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
     }
 
     return (
