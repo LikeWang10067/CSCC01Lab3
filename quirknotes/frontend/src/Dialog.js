@@ -43,9 +43,9 @@ function Dialog({open, initialNote, closeDialog, postNote: postNoteState,
                     console.log("Served failed:", response.status)
                 } else {
                     await response.json().then((data) => {
-                        postNoteState(data.insertedId, note.title, note.content)
-                        //setStatus("Note posted!") // Can be replaced with close(), if you want!
-                        close()
+                        postNoteState(data.insertedId, note.title, note.content);
+                        setStatus("Note posted!"); // Can be replaced with close(), if you want!
+                        close();
                     }) 
                 }
             })
@@ -55,29 +55,36 @@ function Dialog({open, initialNote, closeDialog, postNote: postNoteState,
         } 
     }
 
-    const patchNote = async (entry) => {
-        try {
-            const response = await fetch(`http://localhost:4000/patchNote/${entry._id}`, {
-                method: 'PATCH', // Specify the method to use for the request
-                headers: {
-                    'Content-Type': 'application/json', // Specify the content type in the header
-                },
-                body: JSON.stringify({
-                    title: entry.title, // Assuming the note has a title
-                    content: entry.content, // Assuming the note has content
-                }), // Convert the JavaScript object to a JSON string
-            });
+    const patchNote = async () => {
+        if (!note || !note._id || !note.title || !note.content) {
+            setStatus("Please fill in all fields before updating the note");
+            return;
+        }
     
-            if (!response.ok) {
-                // If the response is not ok, log the error status
-                console.error("Error updating note:", response.status);
-            } else {
-                // If the update is successful, update the local state
-                const updatedNote = await response.json(); // Assuming the response includes the updated note data
-                patchNoteState(entry._id, entry.title, entry.content);
-                console.log("Note updated successfully", updatedNote);
-            }
+        console.log(`Updating note with ID: ${note._id}`, note.title, note.content);
+        setStatus("Updating note...");
+    
+        try {
+            await fetch(`http://localhost:4000/patchNote/${note._id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({title: note.title, content: note.content})} )
+            .then(async (response) => {
+                if (!response.ok) {
+                    setStatus(`Error trying to update note`)
+                    console.log("Served failed:", response.status)
+                } else {
+                    await response.json().then(async () => {
+                        patchNoteState(note._id, note.title, note.content);
+                        setStatus("Note updated!"); // Can be replaced with close(), if you want!
+                        close();
+                    }) 
+                }
+            })
         } catch (error) {
+            setStatus("Error trying to update note");
             console.error("Fetch error:", error);
         }
     }
